@@ -8,7 +8,7 @@ from .models import ShoppingCart, OrderInfo, OrderGoods
 
 
 class ShoppingCartAdmin(object):
-    list_display = ["user", "goods", "goods_nums", ]
+    list_display = ["user", "goods", "nums", ]
 
 
 class OrderInfoAdmin(object):
@@ -24,5 +24,10 @@ class OrderInfoAdmin(object):
     inlines = [OrderGoodsInline, ]
 
 
+class OrderGoodsAdmin(object):
+    list_display = ["order", "goods",  "goods_nums", "add_time"]
+
+
 xadmin.site.register(ShoppingCart, ShoppingCartAdmin)
 xadmin.site.register(OrderInfo, OrderInfoAdmin)
+xadmin.site.register(OrderGoods, OrderGoodsAdmin)

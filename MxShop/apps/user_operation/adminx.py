@@ -28,7 +28,7 @@ class UserLeavingMessageAdmin(object):
 
 
 class UserAddressAdmin(object):
-    list_display = ["signer_name", "signer_moblie", "district", "address"]
+    list_display = ["signer_name", "signer_mobile", "district", "address"]
 
 
 xadmin.site.register(UserFav, UserFavAdmin)

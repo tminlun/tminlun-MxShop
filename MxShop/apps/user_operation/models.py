@@ -23,13 +23,16 @@ class UserFav(models.Model):
 
 
 class UserAddress(models.Model):
+    '''
+    收货地址
+    '''
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="用户")
     province = models.CharField(max_length=10,default="",verbose_name="省份")
     city = models.CharField(max_length=10,default="",verbose_name="城市")
     district = models.CharField(max_length=100,default="",verbose_name="区域")
     address = models.CharField(max_length=200,default="",verbose_name="详细地址")
     signer_name = models.CharField(max_length=30,default="",verbose_name="收货人姓名")
-    signer_moblie = models.CharField(max_length=11,default="",verbose_name="收货人手机")
+    signer_mobile = models.CharField(max_length=11,default="",verbose_name="收货人手机")
     add_time = models.DateTimeField(default=datetime.now,verbose_name="添加时间")
 
     class Meta:

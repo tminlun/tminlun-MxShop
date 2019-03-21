@@ -12,15 +12,17 @@ class ShoppingCart(models.Model):
     """
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,verbose_name="用户")
     goods = models.ForeignKey(Goods,on_delete=models.CASCADE,verbose_name="购物车商品")
-    goods_nums = models.IntegerField(default=0,verbose_name="商品的数量")
+    nums = models.IntegerField(default=0,verbose_name="商品的数量")
     add_time = models.DateTimeField(default=datetime.now,verbose_name="添加时间")
 
     class Meta:
         verbose_name = '购物车'
         verbose_name_plural = verbose_name
+        # 用户和商品联合唯一。不希望有相同记录时报错，希望有相同记录时goods_nums + 1
+        unique_together = ('user', 'goods')
 
     def __str__(self):
-        return "{0}({1})".format(self.goods,self.goods_nums)
+        return "{0}({1})".format(self.goods,self.nums)
 
 
 class OrderInfo(models.Model):
@@ -40,7 +42,8 @@ class OrderInfo(models.Model):
     )
 
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, verbose_name="用户")
-    # unique=True：订单号唯一
+    # unique=True：订单号唯一。
+    # 如果不设置可以为空，当views的CreateMxin时，用户没有填写order_sn会出错的。（order_sn是后端生成的）
     order_sn = models.CharField("订单编号", max_length=30, null=True, blank=True, unique=True)
     # 微信支付会用到
     nonce_str = models.CharField("微信支付随机加密串", max_length=50, null=True, blank=True, unique=True)
@@ -55,6 +58,8 @@ class OrderInfo(models.Model):
     pay_time = models.DateTimeField("支付时间", null=True, blank=True)
 
     # 用户信息
+#如果是外键，用户已经支付的地址。当用户在个人中心修改信息时，已经支付的地址也会修改，用户就会找不到原来支付的地址
+    # （所以把用户已经支付的地址，赋值给OrderInfo此数据库，不管用户有没有修改，都不影响address）
     address = models.CharField("收货地址", max_length=100, default="")
     signer_name = models.CharField("签收人", max_length=20, default="")
     singer_mobile = models.CharField("联系电话", max_length=11)
@@ -71,7 +76,8 @@ class OrderInfo(models.Model):
 
 class OrderGoods(models.Model):
     """
-    商品的订单、商品数量
+    订单的所有商品
+    OrderInfo（一）对：OrderGoods（多）【此模型的所有商品，赋值给单个OrderInfo】
     """
     # 一个订单对应多个商品
     order = models.ForeignKey(OrderInfo,on_delete=models.CASCADE,verbose_name="订单",related_name="goods")
@@ -80,7 +86,7 @@ class OrderGoods(models.Model):
     add_time = models.DateTimeField("添加时间", default=datetime.now)
 
     class Meta:
-        verbose_name = "商品订单"
+        verbose_name = "订单的商品"
         verbose_name_plural = verbose_name
 
     def __str__(self):

@@ -24,16 +24,24 @@ from rest_framework.authtoken import views
 from rest_framework_jwt.views import obtain_jwt_token
 from goods.views import GoodsListViewSet, CategoryViewSet
 from users.views import SmsCodeViewSet, UserViewSet
-from user_operation.views import UserFavViewSet
-
+from user_operation.views import UserFavViewSet,UserLeavingMessageViewSet,UserAddressViewSet
+from trade.views import ShoppingCartViewSet,OrderInfoViewSet
 router = DefaultRouter()  # 组合GenericViewSet方法，自动添加get、post、patch方法
 
-router.register('goods', GoodsListViewSet,base_name='goods')  # 配置商品的url（坑：必须添加 base_name）
-router.register('categorys', CategoryViewSet,base_name='categorys')  # 配置商品分类的url，RetrieveModelMixin：自动返回一个具体的实例
-router.register('codes', SmsCodeViewSet,base_name='codes')  # 发送手机验证码的url
-router.register('users', UserViewSet,base_name='users')  # 发送手机验证码的url
+router.register('goods', GoodsListViewSet,base_name='goods')  # 配置商品（坑：必须添加 base_name）
+router.register('categorys', CategoryViewSet,base_name='categorys')  # 配置商品分类，RetrieveModelMixin：自动返回一个具体的实例
+router.register('codes', SmsCodeViewSet,base_name='codes')  # 发送手机验证码
+router.register('users', UserViewSet,base_name='users')  # 用户操作（注册，获取，修改...）
 # 收藏
 router.register('userfavs', UserFavViewSet,base_name='userfavs')
+# 留言
+router.register('messages', UserLeavingMessageViewSet,base_name='messages')
+# 收货地址
+router.register('address', UserAddressViewSet,base_name='address')
+# 购物车管理
+router.register('shopcarts', ShoppingCartViewSet, base_name="shopcarts")
+# 订单管理
+router.register('orders', OrderInfoViewSet, base_name="orders")
 
 
 urlpatterns = [

@@ -16,8 +16,8 @@ User = get_user_model()
 
 class SmsSerializer(serializers.Serializer):
     """
-    验证注册号码
-    因为只是验证号码（用户只输入号码），前端不传递code过来（code是自己生成的）。
+    只用来验证号码
+    因为只是验证号码（用户只输入号码），用户不传递code过来（code是自己生成的），所以不允许用ModelSerializer。
     如果用ModelSerializer，前端不传递code，code又是必填字段。会报错
     """
     mobile = serializers.CharField(max_length=11)  # 和前端一致名称
@@ -40,13 +40,13 @@ class SmsSerializer(serializers.Serializer):
             # 刚刚发送的时间还在一分钟内（"刚刚发送的时间"大于一分钟内 (刚刚发送时间-60秒)），不给发送（发送验证码）
             raise serializers.ValidationError("60内不得发送")
 
-        return mobile  # 记得方法里面返回结果，不然debug获取不到mobile
+        return mobile  # 记得验证完返回字段，不然debug获取不到mobile
 
 
 class UserRegSerializer(serializers.ModelSerializer):
     """
     验证用户的code
-    用户传递的code要进行验证，但是不保存到数据库
+    用户post的code要进行验证，但是不返回给客户端
     """
     # 会在测试显示code错误。不保存到数据库，所以在此新建serializers验证就行.help_text在测试显示中文。required：只能在获取不到code字段才生效
     # error_messages：自定义错误;label：显示为中文
@@ -98,12 +98,13 @@ class UserRegSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         '''
+        两个字段联合在一起进行验证，那么我们就可以重载validate( )方法
         验证完code，再删除code
         :param attrs: 此UserSerializer的所有方法
         '''
         attrs["mobile"] = attrs["username"]  # 自己把username(手机号码)传递给mobile
         del attrs["code"]  # 删除自定义的code,不需要传递给数据库
-        return attrs
+        return attrs  # 传进来什么参数，就返回什么参数
 
     class Meta:
         model = User
