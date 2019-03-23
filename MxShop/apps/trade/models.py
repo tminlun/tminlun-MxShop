@@ -82,7 +82,7 @@ class OrderGoods(models.Model):
     # 一个订单对应多个商品
     order = models.ForeignKey(OrderInfo,on_delete=models.CASCADE,verbose_name="订单",related_name="goods")
     goods = models.ForeignKey(Goods, on_delete=models.CASCADE, verbose_name="订单的商品")
-    goods_nums = models.IntegerField(default=0, verbose_name="商品数量")
+    goods_num = models.IntegerField(default=0, verbose_name="商品数量")
     add_time = models.DateTimeField("添加时间", default=datetime.now)
 
     class Meta:

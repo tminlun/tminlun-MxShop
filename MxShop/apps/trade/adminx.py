@@ -25,7 +25,7 @@ class OrderInfoAdmin(object):
 
 
 class OrderGoodsAdmin(object):
-    list_display = ["order", "goods",  "goods_nums", "add_time"]
+    list_display = ["order", "goods",  "goods_num", "add_time"]
 
 
 xadmin.site.register(ShoppingCart, ShoppingCartAdmin)

@@ -16,7 +16,7 @@ User = get_user_model()
 
 class SmsSerializer(serializers.Serializer):
     """
-    只用来验证号码
+    号码是否合法，点击验证码是否超时
     因为只是验证号码（用户只输入号码），用户不传递code过来（code是自己生成的），所以不允许用ModelSerializer。
     如果用ModelSerializer，前端不传递code，code又是必填字段。会报错
     """
@@ -56,14 +56,13 @@ class UserRegSerializer(serializers.ModelSerializer):
                                      "required": "请输入验证码",
                                      "max_length": "验证码格式错误",
                                      "min_length": "验证码格式错误"
-
                                  },
                                  help_text="验证码")
     # 在测试显示username错误。allow_blank 不能为空。queryset查询数据库有没有此用户。（不能注册过的）
     username = serializers.CharField(required=True,allow_blank=False,help_text="用户名",label="用户名",
                                      validators=[UniqueValidator(queryset=User.objects.all(),message="用户已经存在")]
                                      )
-
+    # style:密文
     password = serializers.CharField(
         style={'input_type': 'password'}, label="密码", write_only=True
     )
@@ -81,11 +80,12 @@ class UserRegSerializer(serializers.ModelSerializer):
         :return: 不需要return code，不保存数据库
         '''
 
-        # initial_data['username']：post过来的值。排序取到最近的记录
+        # initial_data['username']：post过来的号码。排序取到最近的记录
         verify_records = VerifyCode.objects.filter(mobile=self.initial_data["username"]).order_by("-add_time")
 
-        # 验证code
+        # 点击注册时的验证
         if verify_records:
+            # 验证码发送成功，保存到VerifyCode，有code、mobile
             last_records = verify_records[0]  # 取第一个（最新）code
             five_minutes_age = datetime.now() - timedelta(hours=1, minutes=5, seconds=0)
             if five_minutes_age > last_records.add_time:  # 超过5分钟就算超时
@@ -103,8 +103,8 @@ class UserRegSerializer(serializers.ModelSerializer):
         :param attrs: 此UserSerializer的所有方法
         '''
         attrs["mobile"] = attrs["username"]  # 自己把username(手机号码)传递给mobile
-        del attrs["code"]  # 删除自定义的code,不需要传递给数据库
-        return attrs  # 传进来什么参数，就返回什么参数
+        del attrs["code"]  # 删除自定义的code,不需要传递给User
+        return attrs  # 所有验证过的post数据，传递给views的get_serializer(data=request.data)
 
     class Meta:
         model = User

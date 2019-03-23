@@ -13,12 +13,13 @@ from .serializers import UserFavSerializers,UserFavDetailSerializers,UserLeaving
 
 class UserFavViewSet(mixins.CreateModelMixin,mixins.DestroyModelMixin,mixins.ListModelMixin,mixins.RetrieveModelMixin,viewsets.GenericViewSet):
     """
+    商品的收藏
     create:
-        商品的收藏
+        收藏
     delete:
         取消收藏:DestroyModelMixin
     list:
-        把用户收藏列表展现出来
+        个人中心的收藏列表
     retrieve:
         通过url的参数（goods_id）来判断某个商品是否收藏
     """
@@ -43,11 +44,12 @@ class UserFavViewSet(mixins.CreateModelMixin,mixins.DestroyModelMixin,mixins.Lis
     def get_serializer_class(self):
         ''' 动态区别serializer状态 '''
         if self.action == 'list':
-            # 状态为详情信息，返回UserDetailSerialize
+            # 个人中心收藏，返回UserDetailSerialize
             return UserFavDetailSerializers
         elif self.action == 'create':
+            # 收藏
             return UserFavSerializers
-        # 其他serializer状态
+        # 删除
         return UserFavSerializers
 
 
@@ -80,7 +82,7 @@ class UserAddressViewSet(viewsets.ModelViewSet):
         修改收货地址
     delete:
         删除收货地址
-    read:
+    retrieve:
         详细收货地址
     """
     serializer_class = UserAddressSerializers

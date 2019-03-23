@@ -18,7 +18,7 @@ class YunPian(object):
 
     def send_sms(self,code,mobile):
         ''' 发送验证码方法 '''
-        # 需要传递的参数
+        # 传递的data
         parmas = {
             "apikey": self.api_key,
             "mobile":  mobile,
@@ -31,10 +31,18 @@ class YunPian(object):
         print(re_dict)
         return re_dict
 
+    def random_code(self):
+        from random import choice
+        seeds = '1234567890'
+        code_list = []
+        for i in range(4):
+            code_list.append(choice(seeds))
+        return "".join(code_list)
+
 
 def mian():
     yun_pian = YunPian('828bb1c73cae18e05c184969679cbd3e')
-    yun_pian.send_sms('5201314', '15625873905')
+    yun_pian.send_sms(yun_pian.random_code, '15625873905')
 
 
 if __name__ == '__main__':

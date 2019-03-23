@@ -54,7 +54,7 @@ class GoodsSerializer(serializers.ModelSerializer):
     """
     # 同ModelForms，可以添加字段（也可以实例化CategorySerializer的category）来覆盖默认的字段（Goods的category）
     category = GoodsCategorySerializer()
-    goods_banner = GoodsImageSerializer(many=True)  # goods通过related_name,反向查询所有的轮播图（Goods.goods_banner）
+    goods_banner = GoodsImageSerializer(many=True)  # goods通过related_name,反向查询所有的商品图片
 
     class Meta:
         model = Goods

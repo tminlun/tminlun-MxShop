@@ -20,12 +20,13 @@ from django.conf import settings #上传图片
 from django.conf.urls.static import static #上传图片
 from rest_framework.documentation import include_docs_urls
 from rest_framework.routers import DefaultRouter
-from rest_framework.authtoken import views
 from rest_framework_jwt.views import obtain_jwt_token
 from goods.views import GoodsListViewSet, CategoryViewSet
 from users.views import SmsCodeViewSet, UserViewSet
 from user_operation.views import UserFavViewSet,UserLeavingMessageViewSet,UserAddressViewSet
 from trade.views import ShoppingCartViewSet,OrderInfoViewSet
+
+
 router = DefaultRouter()  # 组合GenericViewSet方法，自动添加get、post、patch方法
 
 router.register('goods', GoodsListViewSet,base_name='goods')  # 配置商品（坑：必须添加 base_name）

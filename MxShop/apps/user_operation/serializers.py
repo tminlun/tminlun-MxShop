@@ -106,4 +106,5 @@ class UserAddressSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = UserAddress
+        # 验证完字段，返回api给前端
         fields = ("id","user", "province", "city", "district", "address", "signer_name", "signer_mobile", "add_time")

@@ -64,8 +64,9 @@ class SmsCodeViewSet(CreateModelMixin, viewsets.GenericViewSet):
         serializer = self.get_serializer(data=request.data)  # 获取serializer_class
         serializer.is_valid(raise_exception=True)  # 判断输入是否合法（forms的is_valid），不合法，不执行以下代码
 
-        # 如果上面验证是合法，获取post来的mobile。自定义code
+        # 如果上面验证是合法，获取post来的mobile。
         mobile = serializer.validated_data["mobile"]
+        # 自定义code
         code = self.generate_code()
 
         # 发送验证码
@@ -99,7 +100,7 @@ class UserViewSet(CreateModelMixin,RetrieveModelMixin,UpdateModelMixin, viewsets
         修改个人中心：只需要UpdateModelMixin方法，自动生成update和partial_update（部分修改）
     '''
     serializer_class = UserRegSerializer  # 系列化serializer
-    queryset = User.objects.all()  # queryset：create时把post的值保存到User模型，不加则不知道保存到哪里
+    queryset = User.objects.all()  # 注册的queryset：create时把post的值保存到User模型，不加则不知道保存到哪里
     # 有用户认证（如：要求登录）。加了此方法就不会弹出登录框，而是返回错误（访问此方法必须有token、登录）
     authentication_classes = (JSONWebTokenAuthentication, authentication.SessionAuthentication)
 
@@ -110,7 +111,7 @@ class UserViewSet(CreateModelMixin,RetrieveModelMixin,UpdateModelMixin, viewsets
             return UserDetailSerialize
         elif self.action == 'create':
             return UserRegSerializer
-        # 其他serializer状态
+        # 修改、删除
         return UserDetailSerialize
 
     def get_permissions(self):
@@ -133,10 +134,10 @@ class UserViewSet(CreateModelMixin,RetrieveModelMixin,UpdateModelMixin, viewsets
         注册功能：获取post的值，来生成token返回给前端。前端将token储存到浏览器
          '''
         serializer = self.get_serializer(data=request.data)  # 获取serializer
-        serializer.is_valid(raise_exception=True)  # 验证psot来的值
+        serializer.is_valid(raise_exception=True)  # 验证post来的值
 
         # 将post的值进行处理生成token和name，返回给客户端
-        user = self.perform_create(serializer)  # 获取serializer的model
+        user = self.perform_create(serializer)  # 获取serializer的model和（attrs）
         re_dict = serializer.data  # 将系列化后的数据，传递给re_dict（客户端）
             # 获取token
         payload = jwt_payload_handler(user)  # 传递user参数，得到payload
@@ -148,13 +149,14 @@ class UserViewSet(CreateModelMixin,RetrieveModelMixin,UpdateModelMixin, viewsets
         # serializer.data 保存了序列化后的数据
         return Response(re_dict, status=status.HTTP_201_CREATED, headers=headers)
 
+    def perform_create(self, serializer):
+        '''获取对象：当前Serializer的model（User），同时把post的值保存到数据库'''
+        serializer.save()
+
     def get_object(self):
         '''
-        重写此get方法：只对当前登录的用户进行操作（就算用户输入users/123：都是返回当前用户ID）
+        进入个人中心只获得当前登录用户（就算用户输入users/123：都是返回当前用户ID）
         注：此方法是控制RetrieveModelMixin、DeleteModelMixin的
         '''
         return self.request.user
 
-    def perform_create(self, serializer):
-        '''获取对象：当前Serializer的model（User），同时把post的值保存到数据库'''
-        serializer.save()

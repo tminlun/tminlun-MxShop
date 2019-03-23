@@ -7,7 +7,7 @@ from rest_framework import mixins
 from utils.permissions import IsOwnerOrReadOnly
 
 from .models import ShoppingCart,OrderInfo,OrderGoods
-from .serializers import ShoppingCartSerializer,ShoppingCartDetailSerializer,OrderInfoSerializer
+from .serializers import ShoppingCartSerializer,ShoppingCartDetailSerializer,OrderInfoSerializer,OrderDetailSerializer
 # Create your views here.
 
 
@@ -15,11 +15,11 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
     """
     购物车操作
     list:
-        获取购物车
+        获取购物车数据
     create:
         添加商品到购物车
     update:
-        更改购物车数量和价格
+        更改购物车（数量和价格）
     delete:
         删除单个购物车
     """
@@ -46,35 +46,46 @@ class OrderInfoViewSet(mixins.CreateModelMixin,mixins.ListModelMixin,mixins.Dest
     update:
         订单不可以修改，不然价格被修改了怎么办
     list:
-        获取订单信息
+        获取订单数据
     create:
         创建订单
     delete:
-        删除订单(order_info)的同时，会删除关联的订单商品(order_goods)
+        删除订单(order_info)的同时，会删除关联的，订单商品(order_goods)
     retrieve:
-        订单详情
+        订单详情,新添加serializer，来获得goods的数据
     """
     authentication_classes = (JSONWebTokenAuthentication, SessionAuthentication)  # 权限验证
     permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)  # permission：用户验证（必须 登录、当前用户）
     serializer_class = OrderInfoSerializer
 
+    def get_serializer_class(self):
+        '''订单详情，需要商品数据'''
+        if self.action == 'retrieve':
+            # 详情页，需要商品数据
+            return OrderDetailSerializer
+        # 订单的列表、创建、删除
+        return OrderInfoSerializer
+
     def perform_create(self, serializer):
         '''
-            提交订单时（获取用户提交的订单数据后），购物车所有的商品，保存到OrderInfo
+            serializer获取所有post数据，则执行此方法
+            提交订单时，购物车数据保存到OrderInfo，再清空购物车
+            注：我们只对购物车全部商品进行结算
         '''
-        order = serializer.save()  # serializer/Model的实例
-        shop_carts = ShoppingCart.objects.filter(user=self.request.user)  # 订单的所有商品
+        order = serializer.save()  # 获取serializer/Model的实例
+        shop_carts = ShoppingCart.objects.filter(user=self.request.user)  # 购物车的所有商品
         if shop_carts:
+            # 如果购物车有商品
             for shop_cart in shop_carts:
-                # 单个实例（购物车），逐个的保存到，订单的所有商品
+                # 购物车的单个实例,逐个的保存到，订单的单个实例
                 order_goods = OrderGoods()
                 order_goods.goods = shop_cart.goods
-                order_goods.goods_nums = shop_cart.nums
+                order_goods.goods_num = shop_cart.nums
                 order_goods.order = order
                 order_goods.save()
                 # 清空购物车
                 shop_cart.delete()
-            return order  # 提交订单时，将订单信息完善，再创建订单
+        return order  # 订单信息保存数据库后，返回给前端
 
     def get_queryset(self):
         ''' 当前登录用户订单 '''

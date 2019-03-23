@@ -91,7 +91,7 @@ class Goods(models.Model):
 
 class GoodsImage(models.Model):
     """
-    商品图片（1（食物）对 多（图片）），就要用外键
+    商品图片（1（商品）对 多（图片）），就要用外键
     """
     # related_name：通过related_name把所有对应图片传递给goods
     goods = models.ForeignKey(Goods,on_delete=models.CASCADE,related_name="goods_banner",verbose_name="商品")

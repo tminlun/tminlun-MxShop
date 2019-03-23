@@ -60,8 +60,11 @@ AUTHENTICATION_BACKENDS = {
     'users.views.CustomBackend',
 }
 
+# 添加允许执行跨站点请求
+CORS_ORIGIN_ALLOW_ALL = True
+
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # 跨URL资源共享必须加
+    'corsheaders.middleware.CorsMiddleware',  # 添加允许执行跨站点请求
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -70,7 +73,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-CORS_ORIGIN_ALLOW_ALL = True  # 添加允许执行跨站点请求
+
 ROOT_URLCONF = 'MxShop.urls'
 
 TEMPLATES = [
@@ -178,6 +181,8 @@ REST_FRAMEWORK = {
 
     )
 }
+
+# JWT身份验证
 import datetime
 JWT_AUTH = {
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),  # 设置jwt码过期时间

@@ -52,8 +52,7 @@ class GoodsListViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, Generic
 class CategoryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericViewSet):
     """
     list:
-        商品分类列表数据（这样注释后面读取drf文档的时候会显示出来）
-
+        获取商品分类数据（这样注释后面读取dosc文档的时候会显示出来）
     retrieve:
         自动返回一个具体的实例
         GenericViewSet：自动生成get方法
