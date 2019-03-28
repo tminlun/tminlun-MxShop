@@ -27,7 +27,7 @@ SECRET_KEY = 'u=1yu)g##pm_$)$&2!@gy538a0vof4yqguw7dmr2x)xuu$$!lh'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -102,13 +102,28 @@ WSGI_APPLICATION = 'MxShop.wsgi.application'
 
 DATABASES = {
     'default': {
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        # 本地
+        # # 'ENGINE': 'django.db.backends.sqlite3',
+        # # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        # 'ENGINE': 'django.db.backends.mysql',
+        # 'NAME': 'mxshop',        #数据库名字
+        # 'USER': 'root',          #账号
+        # 'PASSWORD': 'root',    #密码
+        # 'HOST': '127.0.0.1',     #IP
+        # 'PORT': '3306',          #端口
+        #
+        # # 这里引擎用innodb（默认myisam）
+        # # 因为后面第三方登录时，要求引擎为INNODB
+        # # 'OPTIONS':{'init_command': 'SET storage_engine=INNODB'}, #这样设置会报错，改为
+        # "OPTIONS":{"init_command":"SET default_storage_engine=INNODB;"}
+
+
+        #服务器
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mxshop',        #数据库名字
+        'NAME': 'MxShop',        #数据库名字
         'USER': 'root',          #账号
-        'PASSWORD': 'root',    #密码
-        'HOST': '127.0.0.1',     #IP
+        'PASSWORD': 'tml15625873905',    #密码
+        'HOST': '120.79.43.26',     #IP
         'PORT': '3306',          #端口
 
         # 这里引擎用innodb（默认myisam）
@@ -156,9 +171,11 @@ USE_TZ = False  # 默认是Ture，时间是utc时间，由于我们要用本地�
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # 收集静态文件，先上传，执行命令。再注释，再次上传
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+)
 
 MEDIA_URL = '/media/'# 上传图片的路径，上传的图片会自动传递给media目录
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')#让django识别media是存放文件的

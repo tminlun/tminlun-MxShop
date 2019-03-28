@@ -11,7 +11,6 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
     如果不是当前用户会返回404错误
     判断用户是否是当前request的用户
     """
-
     def has_object_permission(self, request, view, obj):
         # obj：模型
         if request.method in permissions.SAFE_METHODS:

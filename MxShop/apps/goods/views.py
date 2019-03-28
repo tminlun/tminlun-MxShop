@@ -31,7 +31,7 @@ class GoodsListViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, Generic
     '''
     list:
         View就是接口
-        商品列表,这里可以在drf显示哦；GenericViewSet：自动生成get方法
+        商品列表,这里可以在drf显示哦；GenericViewSet：自动生成get...方法
     retrieve:
         返回商品详情页（但是serializer要改变，因为goods有个image轮播图）
     '''

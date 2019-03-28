@@ -18,6 +18,7 @@ import xadmin
 from django.urls import path, include, re_path
 from django.conf import settings #上传图片
 from django.conf.urls.static import static #上传图片
+from django.views.generic import TemplateView
 from rest_framework.documentation import include_docs_urls
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
@@ -46,7 +47,12 @@ router.register('orders', OrderInfoViewSet, base_name="orders")
 
 
 urlpatterns = [
+    # 首页
+    path('index/', TemplateView.as_view(template_name='index.html'), name='index'),
+
     path('xadmin/', xadmin.site.urls),
+
+
     # api显示登录按钮
     path('api-auth/', include('rest_framework.urls')),
     # 文档
