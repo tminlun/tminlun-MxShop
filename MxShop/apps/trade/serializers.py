@@ -7,6 +7,9 @@ from rest_framework import serializers
 from goods.models import Goods
 from goods.serializers import GoodsSerializer
 from MxShop.settings import REGEX_MOBILE
+from utils.alipay import AliPay
+from MxShop.settings import ali_pub_key_path, private_key_path
+
 from .models import ShoppingCart,OrderInfo,OrderGoods
 
 
@@ -102,6 +105,36 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     # goods[goods1,goods2...]（goods[OrderGoods1,OrderGoods2]）
     goods = OrderGoodsSerializer(many=True)
 
+    # 个人订单详情，未支付可以在个人订单支付
+    ailpay_url = serializers.SerializerMethodField(read_only=True)
+    def get_ailpay_url(self, obj):
+        """
+        系列化ailpay_url，返回ailpay_url（数据）给前端
+        :param obj: 当前函数对象
+        :return: 支付页面
+        """
+        # AliPay对象
+        alipay = AliPay(
+            appid="2016092700609030",  # 沙箱的APPID
+            # 异步url：支付宝获取商家传递的notify_url，通过POST进行判断，通知商家是否支付成功，
+            # 另外的用途：用户扫码(没有进行支付),支付宝会生成订单url，用户可以通过此url进行支付或者修改订单
+            app_notify_url="http://120.79.43.26/alipay/return/",
+            app_private_key_path=private_key_path,  # 自己生成的私钥
+            alipay_public_key_path=ali_pub_key_path,  # 支付宝的公钥，验证支付宝回传消息使用，不是你自己的公钥,
+            debug=True,  # debug为true时使用沙箱的url。如果不是用正式环境的url
+            # 同步url：电脑支付页面成功，回跳的url；（支付宝获取商家的return_url，通过GET请求返回部分支付信息）
+            return_url="http://120.79.43.26:8001/alipay/return/"
+        )
+        # 请求参数
+        url = alipay.direct_pay(
+            subject=obj.order_sn,  # 订单标题
+            out_trade_no=obj.order_sn,  # 我们商户自行生成的订单号
+            total_amount=obj.order_mount,  # 订单金额
+            return_url='http://120.79.43.26:8001'
+        )
+        re_url = "https://openapi.alipaydev.com/gateway.do?{data}".format(data=url)
+        return re_url
+
     class Meta:
         model = OrderInfo
         fields = "__all__"
@@ -122,6 +155,36 @@ class OrderInfoSerializer(serializers.ModelSerializer):
     pay_status = serializers.CharField(read_only=True)
     pay_time = serializers.CharField(read_only=True)
     add_time = serializers.CharField(read_only=True)
+    # 支付宝支付的url（新增数据库没有的字段）
+    ailpay_url = serializers.SerializerMethodField(read_only=True)
+
+    def get_ailpay_url(self, obj):
+        """
+        系列化ailpay_url，返回ailpay_url（数据）给前端
+        :param obj: 当前函数对象
+        :return: 支付页面
+        """
+        # AliPay对象
+        alipay = AliPay(
+            appid="2016092700609030",  # 沙箱的APPID
+            # 异步url：支付宝获取商家传递的notify_url，通过POST进行判断，通知商家是否支付成功，
+            # 另外的用途：用户扫码(没有进行支付),支付宝会生成订单url，用户可以通过此url进行支付或者修改订单
+            app_notify_url="http://120.79.43.26/alipay/return/",
+            app_private_key_path=private_key_path,  # 自己生成的私钥
+            alipay_public_key_path=ali_pub_key_path,  # 支付宝的公钥，验证支付宝回传消息使用，不是你自己的公钥,
+            debug=True,  # debug为true时使用沙箱的url。如果不是用正式环境的url
+            # 同步url：电脑支付页面成功，回跳的url；（支付宝获取商家的return_url，通过GET请求返回部分支付信息）
+            return_url="http://120.79.43.26:8001/alipay/return/"
+        )
+        # 请求参数
+        url = alipay.direct_pay(
+            subject=obj.order_sn,  # 订单标题
+            out_trade_no=obj.order_sn,  # 我们商户自行生成的订单号
+            total_amount=obj.order_mount,  # 订单金额
+            return_url='http://120.79.43.26:8001'
+        )
+        re_url = "https://openapi.alipaydev.com/gateway.do?{data}".format(data=url)
+        return re_url
 
     def validate_singer_mobile(self, singer_mobile):
         '''验证号码'''

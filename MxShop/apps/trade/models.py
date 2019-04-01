@@ -30,10 +30,10 @@ class OrderInfo(models.Model):
     商品订单信息
     """
     ORDER_STATUS = (
+        ("WAIT_BUYER_PAY", "交易创建"),  # 等待买家付款
         ("TRADE_SUCCESS", "成功"),
         ("TRADE_CLOSED", "超时关闭"),
-        ("WAIT_BUYER_PAY", "交易创建"),
-        ("TRADE_FINISHED", "交易结束"),
+        ("TRADE_FINISHED", "交易结束"),  # 不可退款
         ("paying", "待支付"),
     )
     PAY_TYPE = (

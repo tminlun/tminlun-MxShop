@@ -26,6 +26,7 @@ from goods.views import GoodsListViewSet, CategoryViewSet
 from users.views import SmsCodeViewSet, UserViewSet
 from user_operation.views import UserFavViewSet,UserLeavingMessageViewSet,UserAddressViewSet
 from trade.views import ShoppingCartViewSet,OrderInfoViewSet
+from trade.views import AlipayView
 
 
 router = DefaultRouter()  # 组合GenericViewSet方法，自动添加get、post、patch方法
@@ -69,5 +70,7 @@ urlpatterns = [
     # jwt的token认证接口。前端登录的接口
     path('login/', obtain_jwt_token),
 
+    # 支付宝
+    path('alipay/return/', AlipayView.as_view(),name="alipay")
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

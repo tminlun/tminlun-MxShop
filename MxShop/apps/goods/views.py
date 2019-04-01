@@ -59,4 +59,3 @@ class CategoryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericV
     """
     queryset = GoodsCategory.objects.filter(category_type=1)  # 最初先系列化一级分类
     serializer_class = GoodsCategorySerializer  # 系列化
-

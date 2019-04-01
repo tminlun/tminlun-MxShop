@@ -211,3 +211,9 @@ REGEX_MOBILE = "^1[358]\d{9}$|^147\d{8}$|^176\d{8}$"
 
 # 云片网的 apikey
 APIKEY = '828bb1c73cae18e05c184969679cbd3e'
+
+# 支付宝相关的key
+    # 如果在view用相对路径，很容易出问题
+    # 如果在view用绝对路径，在本地调试或者在服务器调试都很麻烦
+private_key_path = os.path.join(BASE_DIR, 'apps/trade/key/private_2048.txt')
+ali_pub_key_path = os.path.join(BASE_DIR, 'apps/trade/key/alipay_key_2048.txt')
