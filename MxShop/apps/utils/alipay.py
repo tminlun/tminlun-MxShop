@@ -222,7 +222,7 @@ if __name__ == "__main__":
     # direct_pay是生成请求的字符串
     url = alipay.direct_pay(
         subject="测试订单",  # 订单标题
-        out_trade_no="2017020212ww",   # 我们商户自行生成的订单号
+        out_trade_no="2017020212cc",   # 我们商户自行生成的订单号
         total_amount=1,  # 订单金额
         return_url='http://120.79.43.26:8001'
     )

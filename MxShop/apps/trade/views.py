@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.shortcuts import redirect
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
@@ -124,6 +125,7 @@ class AlipayView(APIView):
 
         # 这里可以不做操作。因为不管发不发return url。notify url都会修改订单状态。
         if verify_re is True:
+            # 验证成功
             order_sn = processed_dict.get('out_trade_no', None)
             trade_no = processed_dict.get('trade_no', None)
             trade_status = processed_dict.get('trade_status', None)
@@ -134,7 +136,16 @@ class AlipayView(APIView):
                 existed_order.trade_no = trade_no
                 existed_order.pay_time = datetime.now()
                 existed_order.save()
-            return Response("success")
+            # response = redirect('index')
+            # # 设置cookie让前端进行路由判断，max_age：取一次失效
+            # response.set_cookie('nextPath', 'pay', max_age=2)
+            response = redirect("/index/#/app/home/member/order")
+            return response
+        else:
+            # 验证失败
+            response = redirect('index')
+            return response
+
 
     def post(self, request):
         '''
@@ -168,19 +179,19 @@ class AlipayView(APIView):
         # 验证成功
         if verify_re is True:
             # get：获取字典的元素
-            # 自己生成的唯一订单号
+            # 先提交订单再进行支付，所以支付完成后就拿到自己生成的out_trade_no
             out_trade_no = processed_dict.get('out_trade_no', None)
             # 支付宝系统交易流水号
             trade_no = processed_dict.get('trade_no', None)
             # 交易状态
             trade_status = processed_dict.get('trade_status', None)
-            # 查询数据库的订单记录
+            # 查询数据库有此订单
             existed_orders = OrderInfo.objects.filter(trade_no=out_trade_no)
             for existed_order in existed_orders:
                 # 更新订单状态
-                existed_order.pay_status = trade_status
-                existed_order.trade_no = trade_no
-                existed_order.pay_time = datetime.now()
+                existed_order.pay_status = trade_status  # 订单状态（重点）
+                existed_order.trade_no = trade_no  # 支付宝系统交易流水号
+                existed_order.pay_time = datetime.now()  # 支付时间
                 existed_order.save()
                 # 需要返回一个'success'给支付宝，如果不返回，支付宝会一直发送订单支付成功的消息
             return Response("success")

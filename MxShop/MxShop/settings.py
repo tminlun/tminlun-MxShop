@@ -202,7 +202,7 @@ REST_FRAMEWORK = {
 # JWT身份验证
 import datetime
 JWT_AUTH = {
-    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),  # 设置jwt码过期时间
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=20),  # 设置jwt码过期时间
     'JWT_AUTH_HEADER_PREFIX': 'JWT',  # 不用存储tok，单点登录，可以进行加密（通过加密储存在浏览器，再通过解密得到信息）。JWT需和前端一致
 }
 
@@ -217,3 +217,7 @@ APIKEY = '828bb1c73cae18e05c184969679cbd3e'
     # 如果在view用绝对路径，在本地调试或者在服务器调试都很麻烦
 private_key_path = os.path.join(BASE_DIR, 'apps/trade/key/private_2048.txt')
 ali_pub_key_path = os.path.join(BASE_DIR, 'apps/trade/key/alipay_key_2048.txt')
+
+# 支付宝异步、同步URL
+notify_url = "http://120.79.43.26/alipay/return/"
+return_url="http://120.79.43.26:8001/alipay/return/"
