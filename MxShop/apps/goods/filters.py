@@ -25,4 +25,5 @@ class GoodsFilter(filters.FilterSet):
     class Meta:
         model = Goods
         # 需要过滤的字段，直接添加进来就行了。过滤的字段需要特殊条件，需要在上面自定义字段
-        fields = ['pricemin', 'pricemax', 'is_hot']
+        # 有关goods的字段，有过滤思想。则不需要再定义一个views，直接在这里过滤。如：goods的新品列表
+        fields = ['pricemin', 'pricemax', 'is_hot', 'is_new']

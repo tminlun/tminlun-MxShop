@@ -22,7 +22,7 @@ from django.views.generic import TemplateView
 from rest_framework.documentation import include_docs_urls
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
-from goods.views import GoodsListViewSet, CategoryViewSet
+from goods.views import GoodsListViewSet, CategoryViewSet,GoodsBannerViewSet,IndexCategoryViewSet
 from users.views import SmsCodeViewSet, UserViewSet
 from user_operation.views import UserFavViewSet,UserLeavingMessageViewSet,UserAddressViewSet
 from trade.views import ShoppingCartViewSet,OrderInfoViewSet
@@ -45,6 +45,10 @@ router.register('address', UserAddressViewSet,base_name='address')
 router.register('shopcarts', ShoppingCartViewSet, base_name="shopcarts")
 # 订单管理
 router.register('orders', OrderInfoViewSet, base_name="orders")
+# 轮播图
+router.register('banners', GoodsBannerViewSet, base_name="banners")
+# 首页商品分类广告展示url
+router.register('indexgoods', IndexCategoryViewSet, base_name="indexgoods")
 
 
 urlpatterns = [

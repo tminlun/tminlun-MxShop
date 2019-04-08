@@ -58,7 +58,7 @@ class OrderInfo(models.Model):
     pay_time = models.DateTimeField("支付时间", null=True, blank=True)
 
     # 用户信息
-#如果是外键，用户已经支付的地址。当用户在个人中心修改信息时，已经支付的地址也会修改，用户就会找不到原来支付的地址
+    #如果是外键，用户已经支付的地址。当用户在个人中心修改信息时，已经支付的地址也会修改，用户就会找不到原来支付的地址
     # （所以把用户已经支付的地址，赋值给OrderInfo此数据库，不管用户有没有修改，都不影响address）
     address = models.CharField("收货地址", max_length=100, default="")
     signer_name = models.CharField("签收人", max_length=20, default="")

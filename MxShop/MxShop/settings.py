@@ -102,34 +102,35 @@ WSGI_APPLICATION = 'MxShop.wsgi.application'
 
 DATABASES = {
     'default': {
+        # 自带
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+
         # 本地
-        # # 'ENGINE': 'django.db.backends.sqlite3',
-        # # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        # 'ENGINE': 'django.db.backends.mysql',
-        # 'NAME': 'mxshop',        #数据库名字
-        # 'USER': 'root',          #账号
-        # 'PASSWORD': 'root',    #密码
-        # 'HOST': '127.0.0.1',     #IP
-        # 'PORT': '3306',          #端口
-        #
-        # # 这里引擎用innodb（默认myisam）
-        # # 因为后面第三方登录时，要求引擎为INNODB
-        # # 'OPTIONS':{'init_command': 'SET storage_engine=INNODB'}, #这样设置会报错，改为
-        # "OPTIONS":{"init_command":"SET default_storage_engine=INNODB;"}
-
-
-        #服务器
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'MxShop',        #数据库名字
+        'NAME': 'mxshop',        #数据库名字
         'USER': 'root',          #账号
-        'PASSWORD': 'tml15625873905',    #密码
-        'HOST': '120.79.43.26',     #IP
+        'PASSWORD': 'root',    #密码
+        'HOST': '127.0.0.1',     #IP
         'PORT': '3306',          #端口
 
         # 这里引擎用innodb（默认myisam）
         # 因为后面第三方登录时，要求引擎为INNODB
         # 'OPTIONS':{'init_command': 'SET storage_engine=INNODB'}, #这样设置会报错，改为
         "OPTIONS":{"init_command":"SET default_storage_engine=INNODB;"}
+
+        #服务器
+        # 'ENGINE': 'django.db.backends.mysql',
+        # 'NAME': 'MxShop',        #数据库名字
+        # 'USER': 'root',          #账号
+        # 'PASSWORD': 'tml15625873905',    #密码
+        # 'HOST': '120.79.43.26',     #IP
+        # 'PORT': '3306',          #端口
+        #
+        # # 这里引擎用innodb（默认myisam）
+        # # 因为后面第三方登录时，要求引擎为INNODB
+        # # 'OPTIONS':{'init_command': 'SET storage_engine=INNODB'}, #这样设置会报错，改为
+        # "OPTIONS":{"init_command":"SET default_storage_engine=INNODB;"}
     }
 }
 
@@ -219,5 +220,5 @@ private_key_path = os.path.join(BASE_DIR, 'apps/trade/key/private_2048.txt')
 ali_pub_key_path = os.path.join(BASE_DIR, 'apps/trade/key/alipay_key_2048.txt')
 
 # 支付宝异步、同步URL
-notify_url = "http://120.79.43.26/alipay/return/"
-return_url="http://120.79.43.26:8001/alipay/return/"
+notify_url = "http://120.79.43.26:8001/alipay/return/"
+return_url = "http://120.79.43.26:8001/alipay/return/"

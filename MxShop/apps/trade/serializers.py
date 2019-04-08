@@ -159,6 +159,7 @@ class OrderInfoSerializer(serializers.ModelSerializer):
 
     # 支付宝支付的url（新增数据库没有的字段）
     ailpay_url = serializers.SerializerMethodField(read_only=True)
+
     def get_ailpay_url(self, obj):
         """
         系列化ailpay_url，返回ailpay_url（数据）给前端

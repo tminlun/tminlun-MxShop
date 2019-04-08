@@ -19,6 +19,7 @@ class GoodsCategory(models.Model):
     category_type = models.IntegerField(choices=CATEGORY_TYPE,default=1,verbose_name="类别级别",help_text="类别级别")
     # 当前类别的父类别，一级类别不需要父类别，所以要为空。可以通过当前类别反向查询所有的子类别
     parent_category = models.ForeignKey('self',null=True,blank=True,on_delete=models.CASCADE,verbose_name="当前类别的父级",related_name="sub_cat",help_text="当前类别的父级")
+    # 商品广告的大类可以选择is_banner
     is_banner = models.BooleanField(default=False,verbose_name="是否为轮播类别",help_text="是否为轮播类别")
     add_time = models.DateTimeField(default=datetime.now, verbose_name="添加时间",help_text="添加时间")
 
@@ -32,17 +33,17 @@ class GoodsCategory(models.Model):
 
 class GoodsCategoryBrand(models.Model):
     """
-    商品类别的（广告）品牌图片
+    首页类别广告的商标
     """
-    category = models.ForeignKey(GoodsCategory,on_delete=models.CASCADE,null=True,blank=True,verbose_name="类别")
-    name = models.CharField(default="", max_length=30, verbose_name="广告对应的类别", help_text="品牌名")
+    category = models.ForeignKey(GoodsCategory,on_delete=models.CASCADE,null=True,blank=True,verbose_name="类别", related_name='brands')
+    name = models.CharField(default="", max_length=30, verbose_name="品牌名", help_text="品牌名")
     # imagefield在数据库为char，所以max_length
     image = models.ImageField(max_length=200,upload_to="brands",verbose_name="品牌的图片", help_text="品牌的图片")
     desc = models.TextField(default="", verbose_name="品牌的介绍", help_text="品牌的介绍")
     add_time = models.DateTimeField(default=datetime.now, verbose_name="添加时间",help_text="添加时间")
 
     class Meta:
-        verbose_name = "类别广告的图片和介绍"
+        verbose_name = "类别广告"
         verbose_name_plural = verbose_name
 
     def __str__(self):
@@ -53,7 +54,7 @@ class Goods(models.Model):
     """
     商品
     """
-    category = models.ForeignKey(GoodsCategory, on_delete=models.CASCADE, verbose_name="商品类目")
+    category = models.ForeignKey(GoodsCategory, related_name='goods', on_delete=models.CASCADE, verbose_name="商品类目")
     goods_sn = models.CharField("商品唯一货号", max_length=50, default="")
     name = models.CharField("商品名", max_length=100)
     click_num = models.IntegerField("点击数", default=0)
@@ -108,7 +109,7 @@ class GoodsImage(models.Model):
 
 class GoodsBanner(models.Model):
     """
-    大图：首页的goods轮播图（首页轮播图如果使用goodsimage会拉伸的很难看，所以需要再定义一个）
+    轮播图（首页轮播图如果使用goodsimage会拉伸的很难看，所以需要再定义一个）
     """
     goods = models.ForeignKey(Goods,on_delete=models.CASCADE,verbose_name="商品")
     image = models.ImageField(max_length=200,upload_to="brands/",verbose_name="轮播图片")
@@ -117,6 +118,21 @@ class GoodsBanner(models.Model):
 
     class Meta:
         verbose_name = 'goods首页轮播'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.goods.name
+
+
+class IndexAd(models.Model):
+    '''
+    首页类别广告的广告商品
+    '''
+    category = models.ForeignKey(GoodsCategory, related_name='category', on_delete=models.CASCADE, verbose_name="商品类目")
+    goods = models.ForeignKey(Goods,on_delete=models.CASCADE,related_name="goods",verbose_name="商品")
+
+    class Meta:
+        verbose_name = '广告的商品'
         verbose_name_plural = verbose_name
 
     def __str__(self):

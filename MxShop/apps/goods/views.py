@@ -6,9 +6,10 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.viewsets import GenericViewSet
 from rest_framework import filters  # 搜索
 from rest_framework.authentication import TokenAuthentication
-from django_filters.rest_framework import DjangoFilterBackend  # 过滤
-from goods.serializers import GoodsSerializer, GoodsCategorySerializer  # 和Django的forms、modelsforms功能一样
-from .models import Goods, GoodsCategory
+from django_filters.rest_framework import DjangoFilterBackend  # 过滤+
+# 和Django的forms、modelsforms功能一样
+from goods.serializers import GoodsSerializer, GoodsCategorySerializer,GoodsBannerSerializer, IndexCategorySerializer
+from .models import Goods, GoodsCategory,GoodsBanner
 from .filters import GoodsFilter
 # Create your views here.
 
@@ -33,15 +34,15 @@ class GoodsListViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, Generic
         View就是接口
         商品列表,这里可以在drf显示哦；GenericViewSet：自动生成get...方法
     retrieve:
-        返回商品详情页（但是serializer要改变，因为goods有个image轮播图）
+        返回商品详情页,不需要添加url（但是serializer要改变，因为goods有个image轮播图）
     '''
     queryset = Goods.objects.all().order_by('-id')  # model就行系列化，转换为json，返回给用户（api接口）
     serializer_class = GoodsSerializer  # get()：系列化（加工）
     pagination_class = GoodsPagination  # 实现分页
 
-    # 只需要简单的过滤、搜索、排序，只需要在此（filter_backends）添加属性
+    # DRF的过滤、搜索、排序，只需要在此（filter_backends）添加属性
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
-    #  过滤类
+    #  自定义的过滤类
     filterset_class = GoodsFilter
     # 搜索：默认为模糊查询，~name：name前几个字符要和输入的字符匹配；=name：精准搜索
     search_fields = ('name', 'goods_brief', 'goods_desc')
@@ -59,3 +60,25 @@ class CategoryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericV
     """
     queryset = GoodsCategory.objects.filter(category_type=1)  # 最初先系列化一级分类
     serializer_class = GoodsCategorySerializer  # 系列化
+
+
+class GoodsBannerViewSet(mixins.ListModelMixin,GenericViewSet):
+    '''
+    list:
+        获取轮播图数据
+    '''
+    queryset = GoodsBanner.objects.all().order_by('index')
+    serializer_class = GoodsBannerSerializer
+
+
+class IndexCategoryViewSet(mixins.ListModelMixin, GenericViewSet):
+    '''
+    list:
+        首页商品分类广告数据
+    '''
+
+    # 只选取轮播类别；只选取两个大类进行
+    queryset = GoodsCategory.objects.filter(is_banner=True, name__in=['生鲜食品', '酒水饮料'])
+    # 得到系列化数据
+    serializer_class = IndexCategorySerializer
+

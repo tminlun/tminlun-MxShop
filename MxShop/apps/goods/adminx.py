@@ -16,7 +16,7 @@ __date__: '2019/2/27 0027 13:19'
 @time: 2017/7/4 17:04
 """
 import xadmin
-from .models import Goods, GoodsCategory, GoodsImage, GoodsCategoryBrand, GoodsBanner
+from .models import Goods, GoodsCategory, GoodsImage, GoodsCategoryBrand, GoodsBanner,IndexAd
 
 
 class GoodsAdmin(object):
@@ -46,10 +46,16 @@ class GoodsCategoryAdmin(object):
 class GoodsBrandAdmin(object):
     list_display = ["category", "image", "name", "desc"]
 
+    # 重载get_context方法
     def get_context(self):
-        context = super(GoodsBrandAdmin, self).get_context()
+        '''
+        只能选择一级分类
+        :return:
+        '''
+        context = super(GoodsBrandAdmin, self).get_context()  # 调用父类
         if 'form' in context:
-            context['form'].fields['category'].queryset = GoodsCategory.objects.filter(category_type=1)
+            # if 'form' in context:：固定写法
+            context['form'].fields['category'].queryset = GoodsCategory.objects.filter(category_type=1)#对fields['category']字段做处理
         return context
 
 
@@ -57,10 +63,15 @@ class GoodsBannerAdmin(object):
     list_display = ["goods", "image", "index"]
 
 
+class IndexAdAdmin(object):
+    list_display = ["category", "goods"]
+
+
 xadmin.site.register(Goods, GoodsAdmin)
 xadmin.site.register(GoodsCategory, GoodsCategoryAdmin)
 xadmin.site.register(GoodsBanner, GoodsBannerAdmin)
 xadmin.site.register(GoodsCategoryBrand, GoodsBrandAdmin)
+xadmin.site.register(IndexAd, IndexAdAdmin)
 
 
 

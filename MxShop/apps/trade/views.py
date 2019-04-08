@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from utils.permissions import IsOwnerOrReadOnly
 from utils.alipay import AliPay
-from MxShop.settings import ali_pub_key_path, private_key_path
+from MxShop.settings import ali_pub_key_path, private_key_path,notify_url,return_url
 
 from .models import ShoppingCart,OrderInfo,OrderGoods
 from .serializers import ShoppingCartSerializer,ShoppingCartDetailSerializer,OrderInfoSerializer,OrderDetailSerializer
@@ -48,6 +48,7 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
 class OrderInfoViewSet(mixins.CreateModelMixin,mixins.ListModelMixin,mixins.DestroyModelMixin,mixins.RetrieveModelMixin,viewsets.GenericViewSet):
     """
     订单管理
+    akgami7604@sandbox.com
     update:
         订单不可以修改，不然价格被修改了怎么办
     list:
@@ -114,11 +115,11 @@ class AlipayView(APIView):
         # 3. 生成ALipay对象
         alipay = AliPay(
             appid="2016092700609030",  # 沙箱的APPID
-            app_notify_url="http://120.79.43.26/alipay/return/",
+            app_notify_url=notify_url,
             app_private_key_path=private_key_path,
             alipay_public_key_path=ali_pub_key_path,  # 支付宝的公钥，验证支付宝回传消息使用，不是你自己的公钥,
             debug=True,  # 默认False,
-            return_url="http://120.79.43.26/alipay/return/"
+            return_url=return_url
         )
 
         verify_re = alipay.verify(processed_dict, sign)
@@ -166,12 +167,12 @@ class AlipayView(APIView):
             appid="2016092700609030",  # 沙箱的APPID
             # 异步url：支付宝获取商家传递的notify_url，通过POST进行判断，通知商家是否支付成功，
             # 另外的用途：用户扫码(没有进行支付),支付宝会生成订单url，用户可以通过此url进行支付或者修改订单
-            app_notify_url="http://120.79.43.26:8001/alipay/return/",
+            app_notify_url=notify_url,
             app_private_key_path=private_key_path,  # 自己生成的私钥
             alipay_public_key_path=ali_pub_key_path,  # 支付宝的公钥，验证支付宝回传消息使用，不是你自己的公钥,
             debug=True,  # debug为true时使用沙箱的url。如果不是用正式环境的url
             # 同步url：电脑支付页面成功，回跳的url；（支付宝获取商家的return_url，通过GET请求返回部分支付信息）
-            return_url="http://120.79.43.26:8001/alipay/return/"
+            return_url=return_url
         )
 
         # 验证URL参数
