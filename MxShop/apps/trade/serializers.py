@@ -76,7 +76,7 @@ class ShoppingCartSerializer(serializers.Serializer):
         Serializer默认不重写update、create方法。如果要进行这些操作，必须手动添加
         :param instance: 当前类的，model实例
         :param validated_data: 用户put的数据
-        :return:
+        :return: 修改购物车数量
         '''
         instance.nums = validated_data['nums']
         return instance

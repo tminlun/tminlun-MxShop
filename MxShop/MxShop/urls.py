@@ -16,6 +16,8 @@ Including another URLconf
 # from django.contrib import admin
 import xadmin
 from django.urls import path, include, re_path
+
+from django.conf.urls import url
 from django.conf import settings #上传图片
 from django.conf.urls.static import static #上传图片
 from django.views.generic import TemplateView
@@ -72,9 +74,16 @@ urlpatterns = [
     # path('api-token-auth/', views.obtain_auth_token),
 
     # jwt的token认证接口。前端登录的接口
-    path('login/', obtain_jwt_token),
+    # $：避免同名url
+    url(r'^login/$', obtain_jwt_token),
 
     # 支付宝
-    path('alipay/return/', AlipayView.as_view(),name="alipay")
+    path('alipay/return/', AlipayView.as_view(),name="alipay"),
+
+    # 第三方登录。处理登录的原理。
+    # 后续操作：
+    # 第三方第一次登录：如果当前登录了账号,第三方与服务器账号绑定；如果没有登录，会在服务器创建个新账号与第三方绑定。
+    # 下一次登录：会自动识别出来
+    path('', include('social_django.urls', namespace='social'))
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

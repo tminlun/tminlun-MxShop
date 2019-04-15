@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-# 保存最后一刻，加密注册密码
+# 保存最后一刻，会执行信号量
 @receiver(post_save, sender=User)
 def create_user(sender, instance=None, created=False, **kwargs):
     '''

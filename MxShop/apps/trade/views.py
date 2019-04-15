@@ -44,6 +44,56 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return ShoppingCart.objects.filter(user=self.request.user)
 
+    '''
+    改变商品库存数量：
+        注：增删改购物车是单个商品
+         1、添加购物车
+         2、删除购物车
+         3、修改购物车
+    '''
+    def perform_create(self, serializer):
+        '''
+            添加购物车，库存 - 购物车数量
+        '''
+        shop_cart = serializer.save()  # 购物车实例
+        goods = shop_cart.goods  # 商品实例
+        goods.goods_num -= shop_cart.nums  # shop_cart.nums：添加购物车时的数量
+        goods.save()
+
+    def perform_destroy(self, instance):
+        '''
+            删除购物车，库存 + 购物车数量
+        instance：单个购物车实例
+        '''
+        # 库存增加删除前的购物车
+        goods = instance.goods
+        goods.goods_num += instance.nums
+        goods.save()
+        # 删除后的值，如在delete后增加商品库存数，则为0
+        instance.delete()
+
+    # 更新库存,修改可能是增加页可能是减少
+    def perform_update(self, serializer):
+        '''
+        修改购物车
+        :param serializer: 修改后的对象
+        '''
+        # 修改前的购物车对象
+        existed_record = ShoppingCart.objects.get(id=serializer.instance.id)
+        # 修改前的值
+        existed_nums = existed_record.nums
+        # 修改后的值（保存后的值）
+        saved_record = serializer.save()
+
+        # nums：修改后 - 修改前的差
+        # saved_record.nums > existed_nums（nums：正数） ：增加购物车，减少库存
+        # saved_record.nums < existed_nums（nums：负数） ：减少购物车，减少库存
+        nums = saved_record.nums - existed_nums  # saved_record.nums ：修改后的数量；existed_nums：修改前的数量
+        goods = saved_record.goods  # goods对象
+        # 正数(购物车加)：库存数 - nums。负数（购物车减）：库存数 + nums
+        goods.goods_num -= nums  # -= -nums 等于 += nums
+        goods.save()
+
 
 class OrderInfoViewSet(mixins.CreateModelMixin,mixins.ListModelMixin,mixins.DestroyModelMixin,mixins.RetrieveModelMixin,viewsets.GenericViewSet):
     """
@@ -86,7 +136,7 @@ class OrderInfoViewSet(mixins.CreateModelMixin,mixins.ListModelMixin,mixins.Dest
                 # 购物车的单个实例,逐个的保存到，订单的单个实例
                 order_goods = OrderGoods()
                 order_goods.goods = shop_cart.goods
-                order_goods.goods_num = shop_cart.nums
+                order_goods.goods_num = shop_cart.nums  # 购物车总数量传递给订单商品总数量
                 order_goods.order = order  # 商品放在哪个订单
                 order_goods.save()
                 # 清空购物车
@@ -152,6 +202,8 @@ class AlipayView(APIView):
         '''
         处理支付宝的notify_url
         通过POST进行判断，通知商家是否支付成功
+        扩展：为什么不能用本地调试，因为notify_url时返回给服务器的，而不是返回给浏览器处理，而且放在浏览器会不安全。
+        第三方登录可以本地调试，是因为服务器只执行重定向操作，其他都是服务器处理，而且返回只是基本信息，并不是敏感信息。
         '''
 
         processed_dict = {}
@@ -189,6 +241,15 @@ class AlipayView(APIView):
             # 查询数据库有此订单
             existed_orders = OrderInfo.objects.filter(trade_no=out_trade_no)
             for existed_order in existed_orders:
+                # 支付成功再增加商品销量
+                # 卖出n商品，即销售量为n
+                order_goods = existed_order.goods.all()  # 所有订单商品对象（列表），OrderGoods外键是OrderInfo
+                for order_good in order_goods:
+                    goods = order_good.goods  # goods对象，OrderGoods外键是Goods
+                    # 商品销售量 = 订单（卖出）所有商品数量
+                    goods.sold_num += order_good.goods_num
+                    goods.save()
+
                 # 更新订单状态
                 existed_order.pay_status = trade_status  # 订单状态（重点）
                 existed_order.trade_no = trade_no  # 支付宝系统交易流水号

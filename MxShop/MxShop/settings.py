@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'django_filters',
     'coreschema',  # 跨URL资源共享（前后端接口）
     'rest_framework.authtoken',  # TokenAuthentication身份验证方案
+    'social_django',  # 第三方登录
+    'raven.contrib.django.raven_compat',  # sentry错误集成
 
 ]
 
@@ -58,6 +60,14 @@ AUTH_USER_MODEL = 'users.UserProfile'
 # 重载authentication，使得手机号码可以登录。 jwt接口它默认采用的是用户名和密码登录验证，所以要自定义一个用户验证
 AUTHENTICATION_BACKENDS = {
     'users.views.CustomBackend',
+    # 第三方登录
+    'django.contrib.auth.backends.ModelBackend',
+    # 微博
+    'social_core.backends.weibo.WeiboOAuth2',
+    # QQ
+    'social_core.backends.qq.QQOAuth2',
+    # 微信
+    'social_core.backends.weixin.WeixinOAuth2',
 }
 
 # 添加允许执行跨站点请求
@@ -89,6 +99,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media', #上传media图片使得模板显示图片
+                # 第三方登录
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -181,14 +194,15 @@ STATICFILES_DIRS = (
 MEDIA_URL = '/media/'# 上传图片的路径，上传的图片会自动传递给media目录
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')#让django识别media是存放文件的
 
+# drf分页
 # REST_FRAMEWORK = {
 #     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # 开启分页
 #     'PAGE_SIZE': 10,  # 每页显示商品的个数
 # }
 
-
-# 验证用户登录信息
+# drf验证
 REST_FRAMEWORK = {
+    # 验证用户登录信息
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',  # HTTP基本身份验证
         # 默认后端进行验证：CSRF令牌
@@ -196,8 +210,17 @@ REST_FRAMEWORK = {
 
         # 如果使用全局的TokenAuthentication，在用户登录失败或者输入过期验证码的时候，访问不了所有的页面。所以要单独接口验证登录
         # 'rest_framework.authentication.TokenAuthentication',  # 永久存储数据库，不能单点登录
-
-    )
+    ),
+    # 限速设置
+    'DEFAULT_THROTTLE_CLASSES': (
+            'rest_framework.throttling.AnonRateThrottle',  # 未登陆用户
+            'rest_framework.throttling.UserRateThrottle'  # 登陆用户
+        ),
+    # 限速次数
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '3/minute',  # 未登陆用户访问网页一分钟3次后，抛出429异常
+        'user': '6/minute'  # 未登陆用户访问网页一分钟6次后，抛出429异常
+    }
 }
 
 # JWT身份验证
@@ -222,3 +245,44 @@ ali_pub_key_path = os.path.join(BASE_DIR, 'apps/trade/key/alipay_key_2048.txt')
 # 支付宝异步、同步URL
 notify_url = "http://120.79.43.26:8001/alipay/return/"
 return_url = "http://120.79.43.26:8001/alipay/return/"
+
+# drf缓存过期时间, 单位：秒
+# 这个缓存使用的是内存，每次重启之后就会失效,所以要使用redis
+REST_FRAMEWORK_EXTENSIONS = {
+    'DEFAULT_CACHE_RESPONSE_TIMEOUT': 5   #5s过期，时间自己可以随便设定
+}
+
+# redis缓存，数据保存到redis
+# 访问不同参数（页面）redis会多增一条key。如：
+# 1、不同用户过滤不同参数都可以缓存到redis。2、访问其他页码。
+# 启动redis 输入命令："keys *" ，获取Django缓存的key：
+    # 127.0.0.1:6379> keys *
+    # 1) ":1:add567be4e59d96e609eb69221a23072"
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# 第三方登录，里面的值是你的开放平台对应的值
+SOCIAL_AUTH_WEIBO_KEY = '2392794455'
+SOCIAL_AUTH_WEIBO_SECRET = '0463730f8aad338fabd367069687b9f4'
+
+SOCIAL_AUTH_QQ_KEY = 'xxxxxxx'
+SOCIAL_AUTH_QQ_SECRET = 'xxxxxxx'
+
+SOCIAL_AUTH_WEIXIN_KEY = 'xxxxxxx'
+SOCIAL_AUTH_WEIXIN_SECRET = 'xxxxxxx'
+
+# 第三方登录成功后重定向
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/index/'
+
+# Sentry增加函数来实现错误捕捉
+RAVEN_CONFIG = {
+    'dsn': 'http://47de9d4ae76c41c995c33c49d9d36e8c:7e9c35e7ad024089995695f6d3cb20bd@192.168.1.41:9000/2',
+
+}

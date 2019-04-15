@@ -131,7 +131,9 @@ class UserViewSet(CreateModelMixin,RetrieveModelMixin,UpdateModelMixin, viewsets
 
     def create(self, request, *args, **kwargs):
         '''
-        注册功能：获取post的值，来生成token返回给前端。前端将token储存到浏览器
+        注册功能：
+            用户注册之后自动帮他登录了
+            获取post的值，来生成token返回给前端。前端将token储存到浏览器
          '''
         serializer = self.get_serializer(data=request.data)  # 获取serializer
         serializer.is_valid(raise_exception=True)  # 验证post来的值

@@ -1,15 +1,21 @@
 from rest_framework.views import APIView  # 和View功能一样，是View的进阶版
-from rest_framework.response import Response
 from rest_framework import mixins
-from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.viewsets import GenericViewSet
 from rest_framework import filters  # 搜索
+from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
-from django_filters.rest_framework import DjangoFilterBackend  # 过滤+
+from rest_framework_extensions.cache.mixins import CacheResponseMixin  # drf缓存,一定要放在views继承类的第一个
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+
+
+# 过滤
+from django_filters.rest_framework import DjangoFilterBackend
+
 # 和Django的forms、modelsforms功能一样
-from goods.serializers import GoodsSerializer, GoodsCategorySerializer,GoodsBannerSerializer, IndexCategorySerializer
-from .models import Goods, GoodsCategory,GoodsBanner
+from goods.serializers import GoodsSerializer, GoodsCategorySerializer, GoodsBannerSerializer, IndexCategorySerializer
+
+from .models import Goods, GoodsCategory, GoodsBanner
 from .filters import GoodsFilter
 # Create your views here.
 
@@ -27,8 +33,13 @@ class GoodsPagination(PageNumberPagination):
     # 最多能显示100页
     max_page_size = 100
 
-
-class GoodsListViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericViewSet):
+# 第一次访问页面时没有缓存，当再次页面时数据都会缓存进去。效果：访问页面的时间
+# 如不设置过期时间，新增数据时页面只获取缓存的数据
+class GoodsListViewSet(
+        CacheResponseMixin,
+        mixins.ListModelMixin,
+        mixins.RetrieveModelMixin,
+        GenericViewSet):
     '''
     list:
         View就是接口
@@ -39,9 +50,13 @@ class GoodsListViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, Generic
     queryset = Goods.objects.all().order_by('-id')  # model就行系列化，转换为json，返回给用户（api接口）
     serializer_class = GoodsSerializer  # get()：系列化（加工）
     pagination_class = GoodsPagination  # 实现分页
+    throttle_classes = (UserRateThrottle, AnonRateThrottle)  # drf访问限速
 
     # DRF的过滤、搜索、排序，只需要在此（filter_backends）添加属性
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter)
     #  自定义的过滤类
     filterset_class = GoodsFilter
     # 搜索：默认为模糊查询，~name：name前几个字符要和输入的字符匹配；=name：精准搜索
@@ -49,8 +64,19 @@ class GoodsListViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, Generic
     # 排序
     ordering_fields = ('sold_num', 'shop_price')
 
+    def retrieve(self, request, *args, **kwargs):
+        '''重写retrieve方法：点击数 + 1'''
+        instance = self.get_object()
+        instance.click_num += 1
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
-class CategoryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericViewSet):
+
+class CategoryViewSet(
+        mixins.ListModelMixin,
+        mixins.RetrieveModelMixin,
+        GenericViewSet):
     """
     list:
         获取商品分类数据（这样注释后面读取dosc文档的时候会显示出来）
@@ -62,7 +88,7 @@ class CategoryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericV
     serializer_class = GoodsCategorySerializer  # 系列化
 
 
-class GoodsBannerViewSet(mixins.ListModelMixin,GenericViewSet):
+class GoodsBannerViewSet(mixins.ListModelMixin, GenericViewSet):
     '''
     list:
         获取轮播图数据
@@ -78,7 +104,7 @@ class IndexCategoryViewSet(mixins.ListModelMixin, GenericViewSet):
     '''
 
     # 只选取轮播类别；只选取两个大类进行
-    queryset = GoodsCategory.objects.filter(is_banner=True, name__in=['生鲜食品', '酒水饮料'])
+    queryset = GoodsCategory.objects.filter(
+        is_banner=True, name__in=['生鲜食品', '酒水饮料'])
     # 得到系列化数据
     serializer_class = IndexCategorySerializer
-

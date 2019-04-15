@@ -16,7 +16,7 @@ from base64 import decodebytes, encodebytes
 class AliPay(object):
     """
     支付宝支付接口
-    逻辑：
+    逻辑：什么接口都是：应用的url拼接必填参数
     初始化数据（app_notify_url、app_private_key、alipay_public_key、return_url） --
      生成参数（公共参数和请求参数）--
      参数通过

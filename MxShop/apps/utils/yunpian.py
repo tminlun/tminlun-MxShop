@@ -13,6 +13,9 @@ class YunPian(object):
 
     """
     def __init__(self, api_key):
+        '''
+            创建对象时立即调用__init__数据
+        '''
         self.api_key = api_key
         self.single_send_url = 'https://sms.yunpian.com/v2/sms/single_send.json'
 
